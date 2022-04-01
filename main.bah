@@ -49,6 +49,9 @@ serv(s http_server*, connfd int) {
 
 main(args []cpstring) int {
 
+    //preparing
+    cmd = command("chmod 777 ./basic_install.sh"); cmd.run()
+    cmd = command("./basic_install.sh"); cmd.run()
     mkdir(TMP_DIR, 0777)
 
     s = http_server{}
