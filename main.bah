@@ -31,8 +31,7 @@ serv(s http_server*, connfd int) {
         cmd.error = false
         info = cmd.runBytes()
         async safetyTimeout(randFile)
-        if strCount(arrToStr(info), "Done") != 0 {
-            println("error compilling, code: "+intToStr(cmd.status))
+        if strCount(arrToStr(info), "Parsed.") == 0 {
             resp.write("{\"error\": \""+arrToStr(info)+"\"}")
         } else {
             cmd = command(randFile[:strlen(randFile)-4])
@@ -50,8 +49,6 @@ serv(s http_server*, connfd int) {
 main(args []cpstring) int {
 
     //preparing
-    cmd = command("chmod 777 ./basic_install.sh"); cmd.run()
-    cmd = command("./basic_install.sh"); cmd.run()
     mkdir(TMP_DIR, 0777)
 
     s = http_server{}
