@@ -1,0 +1,60 @@
+#include "iostream.bah"
+#include "http.bah"
+#include "json.bah"
+#include "exec.bah"
+#include "rand.bah"
+
+const TMP_DIR = "./TMP_BAH_FILES/"
+
+safetyTimeout(fileName cpstring) {
+    sleep(60)
+    removeFile(fileName)
+    removeFile(fileName[:strlen(fileName)-4])
+}
+
+serv(s http_server*, connfd int) {
+    req = http_request(connfd)
+    resp = http_response(connfd)
+
+    if req.path == "/exec" {
+        if req.method != "POST" {
+            resp.write("Invalid request"); resp.send()
+            return
+        }
+        fs = fileStream{}
+        randFile = TMP_DIR+"bahfile_"+intToStr(randomInRange(0, 999))+intToStr(randomInRange(0, 999))+".bah"
+        fs.open(randFile, "w")
+        fs.writeFile(req.body.str())
+        fs.close()
+
+        cmd = command("bah "+randFile)
+        cmd.error = false
+        info = cmd.runBytes()
+        async safetyTimeout(randFile)
+        if strCount(arrToStr(info), "Done") != 0 {
+            println("error compilling, code: "+intToStr(cmd.status))
+            resp.write("{\"error\": \""+arrToStr(info)+"\"}")
+        } else {
+            cmd = command(randFile[:strlen(randFile)-4])
+            res = cmd.runBytes()
+            resp.write("{\"success\": \""+arrToStr(res)+"\"}")
+            removeFile(randFile[:strlen(randFile)-4])
+        }
+
+        removeFile(randFile)
+        resp.send()
+    }
+
+}
+
+main(args []cpstring) int {
+
+    mkdir(TMP_DIR, 0777)
+
+    s = http_server{}
+    s.port = 8080
+    s.handle = serv
+    s.listenAndServe()
+
+    return 0
+}
