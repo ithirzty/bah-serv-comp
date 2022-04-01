@@ -18,8 +18,6 @@ cp ../bin/linux_amd64 /opt/bah/bah
 cp -s /opt/bah/bah /bin/bah
 chmod 777 /opt/bah
 chmod +x /bin/bah
-rm ./a.out
 
 # Making the update script executable
 cd ../
-chmod +x ./update.sh
